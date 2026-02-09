@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bảng Tuần Hoàn - Cấu Hình Electron</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0fdf4; /* Green-50 */
+        }
+        .grid-container {
+            display: grid;
+            grid-template-columns: 80px repeat(8, 1fr); /* 1 cot header + 8 cot nhom */
+            gap: 4px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        .cell {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            min-height: 70px;
+            position: relative;
+        }
+        /* Header styles */
+        .header-col {
+            background-color: #86efac; /* Green-300 */
+            color: #14532d;
+            font-weight: bold;
+            cursor: pointer;
+            user-select: none;
+        }
+        .header-col:hover {
+            background-color: #4ade80; /* Green-400 */
+        }
+        .header-row {
+            background-color: #86efac; /* Green-300 */
+            color: #14532d;
+            font-weight: bold;
+            cursor: pointer;
+            user-select: none;
+        }
+        .header-row:hover {
+            background-color: #4ade80; /* Green-400 */
+        }
+        .top-left {
+            background-color: #86efac;
+            position: relative;
+        }
+        /* Element styles */
+        .element {
+            background-color: #dcfce7; /* Green-100 */
+            border: 1px solid #bbf7d0;
+            color: #166534;
+        }
+        .symbol {
+            font-size: 1.25rem;
+            font-weight: 800;
+        }
+        .config {
+            font-size: 0.75rem;
+            color: #374151;
+        }
+        .empty {
+            background: transparent;
+            border: none;
+        }
+
+        /* Active/Inactive States */
+        .dimmed {
+            opacity: 0.15;
+            filter: grayscale(100%);
+        }
+        .highlight {
+            background-color: #fef08a; /* Yellow-200 */
+            border-color: #eab308;
+            transform: scale(1.05);
+            z-index: 10;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .header-active {
+            background-color: #16a34a !important; /* Green-600 */
+            color: white !important;
+        }
+        
+        /* Diagonal split for top left cell */
+        .diagonal-split {
+            background: linear-gradient(to top right, #86efac 49%, #14532d 50%, #86efac 51%);
+        }
+        .label-group { position: absolute; top: 5px; right: 10px; font-size: 0.8rem; }
+        .label-period { position: absolute; bottom: 5px; left: 10px; font-size: 0.8rem; }
+
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <div class="text-center mb-6">
+        <h1 class="text-3xl font-bold text-green-900 mb-2">Bảng cấu hình electron lớp ngoài cùng của nguyên tử các nguyên tố nhóm A</h1>
+        <h1 class="text-3xl font-bold text-green-900 mb-2">Giáo viên: Nguyễn Mạnh Hưng - trường THPT Trại Cau</h1>
+        <p class="text-green-700 mb-4">Click vào số <span class="font-bold">Chu kỳ</span> (cột dọc bên trái) hoặc tên <span class="font-bold">Nhóm</span> (hàng ngang trên cùng) để lọc.</p>
+        <button onclick="resetTable()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded shadow transition">
+            Hiện tất cả (Reset)
+        </button>
+    </div>
+
+    <!-- Container cho bảng -->
+    <div class="overflow-x-auto pb-4">
+        <div class="grid-container min-w-[800px]" id="periodicTable">
+            
+            <!-- Hàng tiêu đề (Groups) -->
+            <div class="cell top-left relative bg-green-300">
+                <span class="absolute top-2 right-2 text-xs font-bold text-green-900">Nhóm</span>
+                <div class="w-full h-[1px] bg-green-700 rotate-[25deg] scale-x-110"></div>
+                <span class="absolute bottom-2 left-2 text-xs font-bold text-green-900">Chu kì</span>
+            </div>
+            <div class="cell header-col" onclick="filterGroup('IA')" id="h-IA">IA</div>
+            <div class="cell header-col" onclick="filterGroup('IIA')" id="h-IIA">IIA</div>
+            <div class="cell header-col" onclick="filterGroup('IIIA')" id="h-IIIA">IIIA</div>
+            <div class="cell header-col" onclick="filterGroup('IVA')" id="h-IVA">IVA</div>
+            <div class="cell header-col" onclick="filterGroup('VA')" id="h-VA">VA</div>
+            <div class="cell header-col" onclick="filterGroup('VIA')" id="h-VIA">VIA</div>
+            <div class="cell header-col" onclick="filterGroup('VIIA')" id="h-VIIA">VIIA</div>
+            <div class="cell header-col" onclick="filterGroup('VIIIA')" id="h-VIIIA">VIIIA</div>
+
+            <!-- Chu kỳ 1 -->
+            <div class="cell header-row" onclick="filterPeriod(1)" id="h-p1">1</div>
+            <div class="cell element" data-g="IA" data-p="1"><div class="symbol">H</div><div class="config">1s<sup>1</sup></div></div>
+            <div class="cell empty"></div>
+            <div class="cell empty"></div>
+            <div class="cell empty"></div>
+            <div class="cell empty"></div>
+            <div class="cell empty"></div>
+            <div class="cell empty"></div>
+            <div class="cell element" data-g="VIIIA" data-p="1"><div class="symbol">He</div><div class="config">1s<sup>2</sup></div></div>
+
+            <!-- Chu kỳ 2 -->
+            <div class="cell header-row" onclick="filterPeriod(2)" id="h-p2">2</div>
+            <div class="cell element" data-g="IA" data-p="2"><div class="symbol">Li</div><div class="config">2s<sup>1</sup></div></div>
+            <div class="cell element" data-g="IIA" data-p="2"><div class="symbol">Be</div><div class="config">2s<sup>2</sup></div></div>
+            <div class="cell element" data-g="IIIA" data-p="2"><div class="symbol">B</div><div class="config">2s<sup>2</sup>2p<sup>1</sup></div></div>
+            <div class="cell element" data-g="IVA" data-p="2"><div class="symbol">C</div><div class="config">2s<sup>2</sup>2p<sup>2</sup></div></div>
+            <div class="cell element" data-g="VA" data-p="2"><div class="symbol">N</div><div class="config">2s<sup>2</sup>2p<sup>3</sup></div></div>
+            <div class="cell element" data-g="VIA" data-p="2"><div class="symbol">O</div><div class="config">2s<sup>2</sup>2p<sup>4</sup></div></div>
+            <div class="cell element" data-g="VIIA" data-p="2"><div class="symbol">F</div><div class="config">2s<sup>2</sup>2p<sup>5</sup></div></div>
+            <div class="cell element" data-g="VIIIA" data-p="2"><div class="symbol">Ne</div><div class="config">2s<sup>2</sup>2p<sup>6</sup></div></div>
+
+            <!-- Chu kỳ 3 -->
+            <div class="cell header-row" onclick="filterPeriod(3)" id="h-p3">3</div>
+            <div class="cell element" data-g="IA" data-p="3"><div class="symbol">Na</div><div class="config">3s<sup>1</sup></div></div>
+            <div class="cell element" data-g="IIA" data-p="3"><div class="symbol">Mg</div><div class="config">3s<sup>2</sup></div></div>
+            <div class="cell element" data-g="IIIA" data-p="3"><div class="symbol">Al</div><div class="config">3s<sup>2</sup>3p<sup>1</sup></div></div>
+            <div class="cell element" data-g="IVA" data-p="3"><div class="symbol">Si</div><div class="config">3s<sup>2</sup>3p<sup>2</sup></div></div>
+            <div class="cell element" data-g="VA" data-p="3"><div class="symbol">P</div><div class="config">3s<sup>2</sup>3p<sup>3</sup></div></div>
+            <div class="cell element" data-g="VIA" data-p="3"><div class="symbol">S</div><div class="config">3s<sup>2</sup>3p<sup>4</sup></div></div>
+            <div class="cell element" data-g="VIIA" data-p="3"><div class="symbol">Cl</div><div class="config">3s<sup>2</sup>3p<sup>5</sup></div></div>
+            <div class="cell element" data-g="VIIIA" data-p="3"><div class="symbol">Ar</div><div class="config">3s<sup>2</sup>3p<sup>6</sup></div></div>
+
+            <!-- Chu kỳ 4 -->
+            <div class="cell header-row" onclick="filterPeriod(4)" id="h-p4">4</div>
+            <div class="cell element" data-g="IA" data-p="4"><div class="symbol">K</div><div class="config">4s<sup>1</sup></div></div>
+            <div class="cell element" data-g="IIA" data-p="4"><div class="symbol">Ca</div><div class="config">4s<sup>2</sup></div></div>
+            <div class="cell element" data-g="IIIA" data-p="4"><div class="symbol">Ga</div><div class="config">4s<sup>2</sup>4p<sup>1</sup></div></div>
+            <div class="cell element" data-g="IVA" data-p="4"><div class="symbol">Ge</div><div class="config">4s<sup>2</sup>4p<sup>2</sup></div></div>
+            <div class="cell element" data-g="VA" data-p="4"><div class="symbol">As</div><div class="config">4s<sup>2</sup>4p<sup>3</sup></div></div>
+            <div class="cell element" data-g="VIA" data-p="4"><div class="symbol">Se</div><div class="config">4s<sup>2</sup>4p<sup>4</sup></div></div>
+            <div class="cell element" data-g="VIIA" data-p="4"><div class="symbol">Br</div><div class="config">4s<sup>2</sup>4p<sup>5</sup></div></div>
+            <div class="cell element" data-g="VIIIA" data-p="4"><div class="symbol">Kr</div><div class="config">4s<sup>2</sup>4p<sup>6</sup></div></div>
+
+            <!-- Chu kỳ 5 -->
+            <div class="cell header-row" onclick="filterPeriod(5)" id="h-p5">5</div>
+            <div class="cell element" data-g="IA" data-p="5"><div class="symbol">Rb</div><div class="config">5s<sup>1</sup></div></div>
+            <div class="cell element" data-g="IIA" data-p="5"><div class="symbol">Sr</div><div class="config">5s<sup>2</sup></div></div>
+            <div class="cell element" data-g="IIIA" data-p="5"><div class="symbol">In</div><div class="config">5s<sup>2</sup>5p<sup>1</sup></div></div>
+            <div class="cell element" data-g="IVA" data-p="5"><div class="symbol">Sn</div><div class="config">5s<sup>2</sup>5p<sup>2</sup></div></div>
+            <div class="cell element" data-g="VA" data-p="5"><div class="symbol">Sb</div><div class="config">5s<sup>2</sup>5p<sup>3</sup></div></div>
+            <div class="cell element" data-g="VIA" data-p="5"><div class="symbol">Te</div><div class="config">5s<sup>2</sup>5p<sup>4</sup></div></div>
+            <div class="cell element" data-g="VIIA" data-p="5"><div class="symbol">I</div><div class="config">5s<sup>2</sup>5p<sup>5</sup></div></div>
+            <div class="cell element" data-g="VIIIA" data-p="5"><div class="symbol">Xe</div><div class="config">5s<sup>2</sup>5p<sup>6</sup></div></div>
+
+            <!-- Chu kỳ 6 -->
+            <div class="cell header-row" onclick="filterPeriod(6)" id="h-p6">6</div>
+            <div class="cell element" data-g="IA" data-p="6"><div class="symbol">Cs</div><div class="config">6s<sup>1</sup></div></div>
+            <div class="cell element" data-g="IIA" data-p="6"><div class="symbol">Ba</div><div class="config">6s<sup>2</sup></div></div>
+            <div class="cell element" data-g="IIIA" data-p="6"><div class="symbol">Tl</div><div class="config">6s<sup>2</sup>6p<sup>1</sup></div></div>
+            <div class="cell element" data-g="IVA" data-p="6"><div class="symbol">Pb</div><div class="config">6s<sup>2</sup>6p<sup>2</sup></div></div>
+            <div class="cell element" data-g="VA" data-p="6"><div class="symbol">Bi</div><div class="config">6s<sup>2</sup>6p<sup>3</sup></div></div>
+            <div class="cell element" data-g="VIA" data-p="6"><div class="symbol">Po</div><div class="config">6s<sup>2</sup>6p<sup>4</sup></div></div>
+            <div class="cell element" data-g="VIIA" data-p="6"><div class="symbol">At</div><div class="config">6s<sup>2</sup>6p<sup>5</sup></div></div>
+            <div class="cell element" data-g="VIIIA" data-p="6"><div class="symbol">Rn</div><div class="config">6s<sup>2</sup>6p<sup>6</sup></div></div>
+
+             <!-- Chu kỳ 7 -->
+            <div class="cell header-row" onclick="filterPeriod(7)" id="h-p7">7</div>
+            <div class="cell element" data-g="IA" data-p="7"><div class="symbol">Fr</div><div class="config">7s<sup>1</sup></div></div>
+            <div class="cell element" data-g="IIA" data-p="7"><div class="symbol">Ra</div><div class="config">7s<sup>2</sup></div></div>
+            <div class="cell empty"></div>
+            <div class="cell empty"></div>
+            <div class="cell empty"></div>
+            <div class="cell empty"></div>
+            <div class="cell empty"></div>
+            <div class="cell empty"></div>
+
+        </div>
+    </div>
+    
+    <div class="text-center mt-4 text-sm text-gray-500 italic">
+        * Bảng chỉ hiển thị các nhóm A theo hình ảnh gốc.
+    </div>
+
+<script>
+    let currentFilter = null; // {type: 'period'|'group', value: '...'}
+
+    const elements = document.querySelectorAll('.element');
+    const headers = document.querySelectorAll('.header-col, .header-row');
+
+    function clearStyles() {
+        elements.forEach(el => {
+            el.classList.remove('dimmed', 'highlight');
+        });
+        headers.forEach(h => h.classList.remove('header-active'));
+        currentFilter = null;
+    }
+
+    function applyFilter() {
+        if (!currentFilter) return;
+
+        elements.forEach(el => {
+            let match = false;
+            if (currentFilter.type === 'period' && el.dataset.p == currentFilter.value) match = true;
+            if (currentFilter.type === 'group' && el.dataset.g == currentFilter.value) match = true;
+
+            if (match) {
+                el.classList.remove('dimmed');
+                el.classList.add('highlight');
+            } else {
+                el.classList.add('dimmed');
+                el.classList.remove('highlight');
+            }
+        });
+    }
+
+    function filterPeriod(p) {
+        // Toggle logic
+        if (currentFilter && currentFilter.type === 'period' && currentFilter.value == p) {
+            resetTable();
+            return;
+        }
+
+        clearStyles();
+        document.getElementById(`h-p${p}`).classList.add('header-active');
+        currentFilter = { type: 'period', value: p };
+        applyFilter();
+    }
+
+    function filterGroup(g) {
+        // Toggle logic
+        if (currentFilter && currentFilter.type === 'group' && currentFilter.value == g) {
+            resetTable();
+            return;
+        }
+
+        clearStyles();
+        document.getElementById(`h-${g}`).classList.add('header-active');
+        currentFilter = { type: 'group', value: g };
+        applyFilter();
+    }
+
+    function resetTable() {
+        clearStyles();
+    }
+</script>
+
+</body>
+</html>
